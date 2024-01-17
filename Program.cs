@@ -7,39 +7,39 @@ namespace RSA
 {
     internal class Program
     {
-        // Declare global variables for RSA algorithm parameters
+        // Globale Variablen für die RSA-Algorithmusparameter deklarieren
         static BigInteger p, q, n, phi, e, d;
-        static byte[] msgBytes; // Byte representation of the input message
-        static List<BigInteger> en = new List<BigInteger>(); // List to store encrypted bytes
-        static List<BigInteger> de = new List<BigInteger>(); // List to store decrypted bytes
+        static byte[] msgBytes; // Byte-Darstellung der Eingabenachricht
+        static List<BigInteger> en = new List<BigInteger>(); // Liste zur Speicherung verschlüsselter Bytes
+        static List<BigInteger> de = new List<BigInteger>(); // Liste zur Speicherung entschlüsselter Bytes
 
-        // Method to generate and select a prime number
+        // Methode zur Generierung und Auswahl einer Primzahl
         static BigInteger GenerateAndSelectPrime(string label)
         {
             List<BigInteger> primeOptions = new List<BigInteger>();
 
-            // Generate 3 large prime numbers
-            Console.WriteLine($"Generating 3 large prime numbers for {label}...");
-            for (int i = 0; i < 3; i++)
+            // 3 große Primzahlen generieren
+            Console.WriteLine($"Generiere 2 große Primzahlen für {label}...");
+            for (int i = 0; i < 2; i++)
             {
                 BigInteger prime = BigPrimeGenerator.Generate1024BitPrime();
                 primeOptions.Add(prime);
                 Console.WriteLine($"{i + 1}. {prime}");
             }
 
-            // Allow user to select one of the generated primes
-            Console.WriteLine($"Choose a prime number for {label} (1-3):");
+            // Benutzer erlauben, eine der generierten Primzahlen auszuwählen
+            Console.WriteLine($"Wähle eine Primzahl für {label} (1-2):");
             int choice = int.Parse(Console.ReadLine());
             return primeOptions[choice - 1];
         }
 
-        // Method to calculate 'e' and 'd' for RSA algorithm
+        // Methode zur Berechnung von 'e' und 'd' für den RSA-Algorithmus
         static void CalculateEd()
         {
             for (BigInteger i = 2; i < phi; i++)
             {
-                if (phi % i == 0) continue; // Skip if 'i' divides 'phi'
-                if (MillerRabin.IsPrime(i) && i != p && i != q) // Check if 'i' is prime and not equal to 'p' or 'q'
+                if (phi % i == 0) continue; // Überspringen, wenn 'i' 'phi' teilt
+                if (MillerRabin.IsPrime(i) && i != p && i != q) // Überprüfen, ob 'i' prim ist und nicht gleich 'p' oder 'q'
                 {
                     e = i;
                     d = CalculateD(e);
@@ -51,32 +51,32 @@ namespace RSA
             }
         }
 
-        // Method to calculate 'd' for RSA algorithm
+        // Methode zur Berechnung von 'd' für den RSA-Algorithmus
         static BigInteger CalculateD(BigInteger a)
         {
             for (BigInteger k = 1 + phi; ; k += phi)
                 if (k % a == 0) return k / a;
         }
 
-        // Method to encrypt the message
+        // Methode zur Verschlüsselung der Nachricht
         static void Encrypt()
         {
-            Console.WriteLine("\nStarting Encryption Process...");
+            Console.WriteLine("\nBeginne Verschlüsselungsprozess...");
 
             foreach (byte b in msgBytes)
             {
-                BigInteger pt = new BigInteger(b); // Convert byte to BigInteger
+                BigInteger pt = new BigInteger(b); // Byte in BigInteger konvertieren
                 Console.WriteLine($"Original Byte: {pt}");
 
-                // Encrypt byte using RSA formula
+                // Byte mit RSA-Formel verschlüsseln
                 BigInteger ct = BigInteger.ModPow(pt, e, n);
-                Console.WriteLine($"Encrypted Byte: {ct}");
+                Console.WriteLine($"Verschlüsseltes Byte: {ct}");
 
-                en.Add(ct); // Add encrypted byte to list
+                en.Add(ct); // Verschlüsseltes Byte zur Liste hinzufügen
             }
 
-            // Display the encrypted bytes
-            Console.WriteLine("\nThe Encrypted Bytes Are:");
+            // Die verschlüsselten Bytes anzeigen
+            Console.WriteLine("\nDie verschlüsselten Bytes sind:");
             foreach (var c in en)
             {
                 Console.Write($"{c} ");
@@ -84,53 +84,61 @@ namespace RSA
             Console.WriteLine();
         }
 
-        // Method to decrypt the encrypted message
+        // Methode zur Entschlüsselung der verschlüsselten Nachricht
         static void Decrypt()
         {
-            Console.WriteLine("\nStarting Decryption Process...");
+            Console.WriteLine("\nBeginne Entschlüsselungsprozess...");
 
             foreach (BigInteger ct in en)
             {
-                Console.WriteLine($"Encrypted Byte: {ct}");
+                Console.WriteLine($"Verschlüsseltes Byte: {ct}");
 
-                // Decrypt byte using RSA formula
+                // Byte mit RSA-Formel entschlüsseln
                 BigInteger pt = BigInteger.ModPow(ct, d, n);
-                Console.WriteLine($"Decrypted Byte: {pt}");
+                Console.WriteLine($"Entschlüsseltes Byte: {pt}");
 
-                de.Add(pt); // Add decrypted byte to list
+                de.Add(pt); // Entschlüsseltes Byte zur Liste hinzufügen
             }
 
-            // Convert decrypted bytes back to string
+            // Die entschlüsselten Bytes zurück in einen String konvertieren
             byte[] decryptedBytes = de.ConvertAll(b => (byte)b).ToArray();
             string decryptedMessage = Encoding.UTF8.GetString(decryptedBytes);
 
-            Console.WriteLine($"\nThe Decrypted Message Is: {decryptedMessage}");
+            Console.WriteLine($"\nDie entschlüsselte Nachricht lautet: {decryptedMessage}");
         }
 
-        // Main method
+        // Hauptmethode
         static void Main(string[] args)
         {
+            // Auswahl und Generierung der beiden Primzahlen p und q für RSA
             p = GenerateAndSelectPrime("p");
             do
             {
                 q = GenerateAndSelectPrime("q");
-            } while (q == p); // Ensure 'p' and 'q' are distinct
+            } while (q == p); // Sicherstellen, dass 'p' und 'q' unterschiedlich sind, um die Sicherheit zu gewährleisten
 
-            Console.WriteLine("Enter Message:");
+            // Eingabeaufforderung für die Nachricht, die verschlüsselt werden soll
+            Console.WriteLine("Gib eine Nachricht ein:");
             string msg = Console.ReadLine();
-            msgBytes = Encoding.UTF8.GetBytes(msg); // Convert message to bytes
+            msgBytes = Encoding.UTF8.GetBytes(msg); // Konvertierung der Nachricht in ein Byte-Array
 
-            n = p * q; // Calculate 'n'
-            phi = (p - 1) * (q - 1); // Calculate 'phi'
+            // Berechnung des öffentlichen Schlüssels n (Produkt der beiden Primzahlen)
+            n = p * q; // Berechnung von 'n' als Produkt von 'p' und 'q'
+            phi = (p - 1) * (q - 1); // Berechnung der Eulerschen Phi-Funktion für 'n'
 
-            CalculateEd(); // Calculate 'e' and 'd'
+            // Aufruf der Methode zur Berechnung der RSA-Schlüssel 'e' und 'd'
+            CalculateEd(); // Berechnung der Werte 'e' und 'd' für die Schlüsselpaare
 
-            // Display the generated keys
-            Console.WriteLine($"Public Key (e, n): ({e}, {n})");
-            Console.WriteLine($"Private Key (d, n): ({d}, {n})");
+            // Ausgabe der generierten Schlüssel
+            Console.WriteLine($"Öffentlicher Schlüssel (e, n): ({e}, {n})");
+            Console.WriteLine($"Privater Schlüssel (d, n): ({d}, {n})");
 
-            Encrypt(); // Encrypt the message
-            Decrypt(); // Decrypt the message
+            // Verschlüsselung der eingegebenen Nachricht
+            Encrypt(); // Start des Verschlüsselungsprozesses
+
+            // Entschlüsselung der verschlüsselten Nachricht
+            Decrypt(); // Start des Entschlüsselungsprozesses
         }
+
     }
 }

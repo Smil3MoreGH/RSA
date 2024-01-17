@@ -5,33 +5,33 @@ namespace RSA
 {
     public class BigPrimeGenerator
     {
-        // Use RNGCryptoServiceProvider for generating cryptographically secure random numbers
+        // Verwendung von RNGCryptoServiceProvider für die Erzeugung kryptografisch sicherer Zufallszahlen
         private static RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
 
-        // Method to generate a 1024-bit prime number
+        // Methode zur Generierung einer 1024-Bit-Primzahl
         public static BigInteger Generate1024BitPrime()
         {
             while (true)
             {
-                // Generate a random 1024-bit number
+                // Generieren einer zufälligen 1024-Bit-Zahl
                 BigInteger candidate = GenerateRandom1024BitNumber();
 
-                // Check if the generated number is prime using the Miller-Rabin primality test
+                // Überprüfen, ob die generierte Zahl mithilfe des Miller-Rabin-Primzahltests eine Primzahl ist
                 if (MillerRabin.IsPrime(candidate))
-                    return candidate; // Return the prime number
+                    return candidate; // Rückgabe der Primzahl
             }
         }
 
-        // Method to generate a random 1024-bit number
+        // Methode zur Generierung einer zufälligen 1024-Bit-Zahl
         private static BigInteger GenerateRandom1024BitNumber()
         {
-            byte[] bytes = new byte[128]; // 1024 bits = 128 bytes
-            rng.GetBytes(bytes); // Fill the byte array with random values
+            byte[] bytes = new byte[128]; // 1024 Bits = 128 Bytes
+            rng.GetBytes(bytes); // Füllen des Byte-Arrays mit zufälligen Werten
 
-            bytes[0] |= 0x80; // Set the highest bit to ensure the number is 1024 bits long
-            bytes[bytes.Length - 1] |= 1; // Set the lowest bit to ensure the number is odd (increases the chance of it being prime)
+            bytes[0] |= 0x80; // Setzen des höchsten Bits, um sicherzustellen, dass die Zahl 1024 Bits lang ist
+            bytes[bytes.Length - 1] |= 1; // Setzen des niedrigsten Bits, um sicherzustellen, dass die Zahl ungerade ist (erhöht die Chance, dass sie prim ist)
 
-            // Convert the byte array to a BigInteger and return
+            // Konvertieren des Byte-Arrays in eine BigInteger und Rückgabe
             return new BigInteger(bytes);
         }
     }
